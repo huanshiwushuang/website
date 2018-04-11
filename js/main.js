@@ -13,38 +13,61 @@ require.config({
 
 })
 
-require(["d3"], function (d3) {
+require(["jquery","d3"], function ($,d3) {
+	window.d3 = d3;
 	var svgConfig = {
 		width: 400,
 		height: 300
 	},
 	dataset = [ 250 , 210 , 170 , 130 , 90 ],
-	rectHeight = 25;
+	rectHeight = 25,
+	linear = 
+		d3.scaleLinear()
+		.domain([0,d3.max(dataset)])
+		.range([0,svgConfig.width-50]);
 
-	d3.select("body")
+	var svg = 
+		d3.select("body")
 		.append("svg")
 		.attr("width",svgConfig.width)
-		.attr("height",svgConfig.height)
-		.selectAll("rect")
+		.attr("height",svgConfig.height);
+
+	svg.selectAll("rect")
 		.data(dataset)
 		.enter()
 		.append("rect")
-		.attr("x",20)
+		.attr("x",50)
 		.attr("y", function (d, i) {
 			return i*(rectHeight+10);
 		})
 		.attr("width", function (d, i) {
-			return d;
+			return linear(d);
 		})
 		.attr("height", rectHeight)
 		.attr("fill","skyblue");
+	// X 轴比例尺
+	var xScale = 
+		d3.scaleBand()
+		.domain(d3.range(dataset.length))
+		.range([0,dataset.length*rectHeight+(dataset.length-1)*10])
+		.paddingInner(10/(165/5));
+
+	var xAxis = 
+		d3.axisLeft()
+		.scale(xScale);
+
+	svg.append("g")
+		.attr("transform","translate(20,0)")
+		.attr("class","axis")
+		.call(xAxis);
 
 
 
 
 
-
-
+	function log(a) {
+		console.log(a);
+	}
 
 
 
