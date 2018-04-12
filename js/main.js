@@ -14,55 +14,88 @@ require.config({
 })
 
 require(["jquery","d3"], function ($,d3) {
-	window.d3 = d3;
 	var svgConfig = {
-		width: 400,
-		height: 300
-	},
-	dataset = [ 250 , 210 , 170 , 130 , 90 ],
-	rectHeight = 25,
-	linear = 
-		d3.scaleLinear()
-		.domain([0,d3.max(dataset)])
-		.range([0,svgConfig.width-50]);
+		width: 500,
+		height: 400,
+		marginLeft: 30,
+		marginRight: 1,
+		marginTop: 10,
+		marginBottom: 30
+	}
+	var dataConfig = {
+		data: [87,24,17,66,45,93]
+	}
 
 	var svg = 
-		d3.select("body")
-		.append("svg")
-		.attr("width",svgConfig.width)
-		.attr("height",svgConfig.height);
-
-	svg.selectAll("rect")
-		.data(dataset)
-		.enter()
-		.append("rect")
-		.attr("x",50)
-		.attr("y", function (d, i) {
-			return i*(rectHeight+10);
-		})
-		.attr("width", function (d, i) {
-			return linear(d);
-		})
-		.attr("height", rectHeight)
-		.attr("fill","skyblue");
-	// X 轴比例尺
+		d3.select('body')
+		.append('svg')
+		.attr('width', svgConfig.width)
+		.attr('height', svgConfig.height);
+	// 添加 x 轴
 	var xScale = 
 		d3.scaleBand()
-		.domain(d3.range(dataset.length))
-		.range([0,dataset.length*rectHeight+(dataset.length-1)*10])
-		.paddingInner(10/(165/5));
-
+		.domain(d3.range(dataConfig.data.length))
+		.range([0, svgConfig.width - svgConfig.marginLeft - svgConfig.marginRight])
+		.paddingInner(.3)
+		.paddingOuter(.4);
 	var xAxis = 
-		d3.axisLeft()
+		d3.axisBottom()
 		.scale(xScale);
-
-	svg.append("g")
-		.attr("transform","translate(20,0)")
-		.attr("class","axis")
+	svg.append('g')
+		.attr('transform','translate('+svgConfig.marginLeft+','+(svgConfig.height-svgConfig.marginBottom)+')')
 		.call(xAxis);
-
-
-
+	//  添加 y 轴
+	var yScale = 
+		d3.scaleLinear()
+		.domain([100, 0])
+		.range([0, svgConfig.height - svgConfig.marginTop - svgConfig.marginBottom]);
+	var yAxis = 
+		d3.axisLeft()
+		.scale(yScale);
+	svg.append('g')
+		.attr('transform', 'translate('+svgConfig.marginLeft+','+svgConfig.marginTop+')')
+		.call(yAxis);
+	// 添加 矩形数据
+	svg.selectAll('.myRect')
+		.data(dataConfig.data)
+		.enter()
+		.append('rect')
+		.attr('class','myRect')
+		.attr('transform','translate('+svgConfig.marginLeft+','+svgConfig.marginTop+')')
+		.attr('x', function (d,i) {
+			return i*xScale.step()+xScale.paddingOuter()*xScale.step();
+		})
+		.attr('y', function (d,i) {
+			return yScale(d);
+		})
+		.attr('width', function (d,i) {
+			return xScale.bandwidth();
+		})
+		.attr('height', function (d,i) {
+			return svgConfig.height - svgConfig.marginTop - svgConfig.marginBottom - yScale(d);
+		});
+	// 添加 文字数据
+	svg.selectAll('.myText')
+		.data(dataConfig.data)
+		.enter()
+		.append('text')
+		.attr('class','myText')
+		.attr('transform','translate('+svgConfig.marginLeft+','+svgConfig.marginTop+')')
+		.attr('x', function (d,i) {
+			return xScale.paddingOuter()*xScale.step()+i*xScale.step();
+		})
+		.attr('y', function (d,i) {
+			return yScale(d);
+		})
+		.attr('dx', function (d,i) {
+			return xScale.bandwidth()/2;
+		})
+		.attr('dy', function (d,i) {
+			return 5;
+		})
+		.text(function (d,i) {
+			return d;
+		})
 
 
 	function log(a) {

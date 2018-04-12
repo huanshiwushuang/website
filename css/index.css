@@ -1,18 +1,7 @@
-/*.MyRect {
-    fill: skyblue;
+.myRect {
+	fill: skyblue;
 }
-.MyText {
+.myText {
 	text-anchor: middle;
-}*/
-
-.axis path,
-.axis line{
-    fill: none;
-    stroke: red;
-    shape-rendering: crispEdges;
-}
-
-.axis text {
-    font-family: 'Microsoft YaHei',sans-serif;
-    font-size: 20px;
+	dominant-baseline: text-before-edge;
 }
