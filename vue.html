@@ -6,25 +6,41 @@
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 <body>
-	<form id="dom">
-		<input type="text" name="asd" v-model="msg">
-		<p>
-			{{msg}}
-		</p>
-	</form>
-
+	<ul id="dom">
+		<todo-item 
+			v-for="item in innerObj"
+			v-bind:innerobj="item"
+			v-bind:key="item.id">
+		</todo-item>
+		<button v-on:click="innerObj[0].text = '123ad'">按钮</button>
+	</ul>
 	<script type="text/javascript">
-	var app = new Vue({
-		el: "#dom",
-		data : {
-			msg: "这是msg的消息"
-		},
-		methods: {
-			reverse: function () {
-				this.msg = this.msg.split("").reverse().join("");
+		Vue.component('todo-item', {
+			template: '<li>{{ innerobj.text }}</li>',
+			props: ['innerobj']
+		})
+		var dataObj = {
+				innerObj: [
+					{text:'第1个',id:'0'},
+					{text:'第2个',id:'1'},
+					{text:'第3个',id:'2'},
+					{text:'第4个',id:'3'},
+					{text:'第5个',id:'4'}
+				]
 			}
-		}
-	})
+		var app = new Vue({
+			el: '#dom',
+			data: dataObj,
+			methods: {
+				change: function () {
+					this.innerObj[0].text = 123;
+				}
+			}
+		})
 	</script>
+
+	
+
+
 </body>
 </html>
