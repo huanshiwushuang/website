@@ -1,0 +1,7 @@
+{{message}}
+v-bind
+v-if
+v-for
+v-model
+v-on
+Vue.component()

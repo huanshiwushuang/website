@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>VUE</title>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+	<form id="dom">
+		<input type="text" name="asd" v-model="msg">
+		<p>
+			{{msg}}
+		</p>
+	</form>
+
+	<script type="text/javascript">
+	var app = new Vue({
+		el: "#dom",
+		data : {
+			msg: "这是msg的消息"
+		},
+		methods: {
+			reverse: function () {
+				this.msg = this.msg.split("").reverse().join("");
+			}
+		}
+	})
+	</script>
+</body>
+</html>
