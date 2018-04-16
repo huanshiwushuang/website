@@ -14,6 +14,7 @@ require.config({
 })
 
 require(["jquery","d3"], function ($,d3) {
+	window.d3 = d3;
 	var svgConfig = {
 		width: 500,
 		height: 400,
@@ -85,7 +86,7 @@ require(["jquery","d3"], function ($,d3) {
 			return xScale.paddingOuter()*xScale.step()+i*xScale.step();
 		})
 		.attr('y', function (d,i) {
-			return yScale(d);
+			return yScale(yScale.domain()[0]);
 		})
 		.attr('dx', function (d,i) {
 			return xScale.bandwidth()/2;
@@ -96,84 +97,45 @@ require(["jquery","d3"], function ($,d3) {
 		.text(function (d,i) {
 			return d;
 		})
+		.transition()
+		.duration(function (d,i) {
+			return 2000;
+		})
+		.attr('y', function (d,i) {
+			return yScale(d);
+		})
+
+	// 过渡效果
+	var svg2 = 
+		d3.select('body')
+		.append('svg')
+		.attr('width',svgConfig.width)
+		.attr('height',svgConfig.height)
+		.style('background','#ccc');
+	var durationRect = 
+		svg2.append('rect')
+		.attr('x',30)
+		.attr('y',30)
+		.attr('width',20)
+		.attr('height',20)
+		.attr('fill','#f00');
+	svg2.append('text')
+		.attr('x', 100)
+		.attr('y', 100)
+		.text('点击svg，执行 transition 过渡效果 延时 2秒');
+	$(svg2._groups[0][0]).click(function () {
+		durationRect.transition()
+		.duration(2000)
+		.attr('x',280)
+		.attr('y',180)
+		.attr('fill','#0f0')
+		.attr('width',50)
+		.attr('height',50)
+		.delay(function (d,i) {
+			return 2000;
+		});
+	})
 
 
-	function log(a) {
-		console.log(a);
-	}
 
-
-
-
-	// const svgWidth = 400,
-	//       svgHeight = 400,
-	//       svgSpacing = {left: 30, right: 30, top: 20, bottom: 20}
- //    ;
- //    let dataset = [10, 20, 30, 40, 33, 24, 12, 5];
- //    let svg = d3.select("body")
- //      .append("svg")
- //      .attr("width",svgWidth)
- //      .attr("height",svgHeight);
- //    // 添加 - X轴
- //    var xScale = d3.scaleBand()
- //      .domain(d3.range(dataset.length))
- //      .range([0,svgWidth-svgSpacing.left-svgSpacing.right])
- //      .padding(.3)
- //      .paddingOuter(.7);
- //    let xAxis = d3.axisBottom()
- //      .scale(xScale);
- //    svg.append("g")
- //      .attr("transform","translate("+svgSpacing.left+","+(svgHeight-svgSpacing.bottom)+")")
- //      .call(xAxis);
- //    // 添加 - Y轴
- //    var yScale = d3.scaleLinear()
- //      .domain([0,d3.max(dataset)])
- //      .range([svgHeight-svgSpacing.top-svgSpacing.bottom, 0]);
- //    let yAxis = d3.axisLeft()
- //      .scale(yScale)
- //      .ticks(10);
- //    svg.append("g")
- //      .attr("transform","translate("+svgSpacing.left+","+svgSpacing.top+")")
- //      .call(yAxis);
- //    // 添加 - 矩形图
- //    svg.selectAll(".MyRect")
- //      .data(dataset)
- //      .enter()
- //      .append("rect")
- //      .attr("class","MyRect")
- //      .attr("transform","translate("+svgSpacing.left+","+svgSpacing.top+")")
- //      .attr("x", function (d,i) {
- //        return i*xScale.step()+xScale.paddingOuter()*xScale.step();
- //      })
- //      .attr("y", function (d,i) {
- //        return 0;
- //      })
- //      .attr("width", function (d,i) {
- //        return xScale.bandwidth();
- //      })
- //      .attr("height", function (d,i) {
- //        return svgHeight-yScale(d)-svgSpacing.top-svgSpacing.bottom;
- //      })
- //    // 添加 - 说明文字
- //    svg.selectAll("MyText")
- //      .data(dataset)
- //      .enter()
- //      .append("text")
- //      .attr("class","MyText")
- //      .attr("transform", "translate("+svgSpacing.left+","+svgSpacing.top+")")
- //      .attr("x", function (d,i) {
- //        return i*xScale.step()+xScale.paddingOuter()*xScale.step();
- //      })
- //      .attr("y", function (d,i) {
- //        return 0;
- //      })
- //      .attr("dx", function (d,i) {
- //        return xScale.bandwidth()/2;
- //      })
- //      .attr("dy", function (d,i) {
- //        return 0;
- //      })
- //      .text(function (d,i) {
- //        return d;
- //      })
 })
