@@ -12,7 +12,7 @@
 			v-bind:innerobj="item"
 			v-bind:key="item.id">
 		</todo-item>
-		<button v-on:click="innerObj[0].text = '123ad'">按钮</button>
+		<button v-on:click="change">按钮</button>
 	</ul>
 	<script type="text/javascript">
 		Vue.component('todo-item', {
@@ -36,6 +36,11 @@
 					this.innerObj[0].text = 123;
 				}
 			}
+		})
+
+		app.$watch('innerObj', function (newValue, oldValue) {
+			console.log(newValue);
+			console.log(oldValue);
 		})
 	</script>
 

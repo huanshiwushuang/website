@@ -5,5 +5,7 @@ v-for
 v-model
 v-on
 Vue.component()
-组件中的 props 禁止 大写 推荐 todo-item
+组件中的 props 禁止 大写 推荐 禁止短横线
 注意 如果 VUE 不生效时，注意当时的选择器范围
+v-once
+v-html
