@@ -2,7 +2,7 @@
 2、selectAll()
 3、text()
 4、append()
-5、insert()
+5、insert() 会在所有集合里插入，如果没有第二个css参数，默认在最后插入（等同于append），否则在第二个css选择器前面插入
 6、remove()
 7、domain()
 8、range()
@@ -10,7 +10,7 @@
 10、max()
 11、scaleLinear()
 12、scaleBand()
-13、
+13、update、enter、exit
 14、
 15、
 16、

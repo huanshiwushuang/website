@@ -1,8 +1,11 @@
 body {margin: 0;}
 .myRect {
-	fill: skyblue;
+	/*fill: skyblue;*/
 }
 .myText {
 	text-anchor: middle;
+	dominant-baseline: text-before-edge;
+}
+.myText3 {
 	dominant-baseline: text-before-edge;
 }
