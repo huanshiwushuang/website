@@ -201,6 +201,7 @@ require(["jquery","d3"], function ($,d3) {
 		return i+' 我是 update 和 exit的 exit---> 删除';
 	});
 	// *****************************************************
+	// 饼图
 	var svg4 = 
 		d3.select('body')
 		.append('svg')
@@ -208,10 +209,43 @@ require(["jquery","d3"], function ($,d3) {
 		.attr('width',svgConfig.width)
 		.attr('height',svgConfig.height)
 		.style('background','#999');
+	// 1、布局（原始数据转换->为作图数据）
 	var arr4 = [30,10,43,55,13];
 	var pie = d3.pie();
 	var pieData = pie(arr4);
-	debugger
+	// 2、生成器
+	var arcConfig = {
+		innerRadius: 0,
+		outerRadius: 150
+	}
+	var arcConstructor = 
+		d3.arc()
+		.innerRadius(arcConfig.innerRadius)
+		.outerRadius(arcConfig.outerRadius);
+	// 3、使用生成器，根据作图数据转换为 path 数据绘制
+	var color = ['#f00','#0f0','#00f','#ccc','#666','#000']
+	var arcs = 
+		svg4.selectAll('g')
+		.data(pieData)
+		.enter()
+		.append('g')
+		.attr('transform','translate('+svgConfig.width/2+','+svgConfig.height/2+')');
+	arcs.append('path')
+		.attr('fill', function (d,i) {
+			return color[i];
+		})
+		.attr('d', function (d,i) {
+			return arcConstructor(d);
+		})
+	arcs.append('text')
+		.attr('text-anchor','middle')
+		.attr('transform', function (d) {
+			return 'translate('+arcConstructor.centroid(d)+')';
+		})
+		.text(function (d) {
+			return d.value;
+		})
+
 
 
 })
