@@ -232,7 +232,7 @@ require(["jquery","d3"], function ($,d3) {
 		.attr('transform','translate('+svgConfig.width/2+','+svgConfig.height/2+')');
 	arcs.append('path')
 		.attr('fill', function (d,i) {
-			return color[i];
+			return d3.schemeCategory10[i];
 		})
 		.attr('d', function (d,i) {
 			return arcConstructor(d);
@@ -243,9 +243,29 @@ require(["jquery","d3"], function ($,d3) {
 			return 'translate('+arcConstructor.centroid(d)+')';
 		})
 		.text(function (d) {
-			return d.value;
+			return d.data;
 		})
+	// 力导向图
+	var svg5 = 
+		d3.select('body')
+		.append('svg')
+		.attr('width',svgConfig.width)
+		.attr('height',svgConfig.height)
+		.style('background','#ccc');
+	var nodes = [ { name: "桂林" }, { name: "广州" },
+              { name: "厦门" }, { name: "杭州" },
+              { name: "上海" }, { name: "青岛" },
+              { name: "天津" } ];
+    var links = [ { source : 0 , target: 1 } , { source : 0 , target: 2 } ,
+               { source : 0 , target: 3 } , { source : 1 , target: 4 } ,
+               { source : 1 , target: 5 } , { source : 1 , target: 6 } ];
+    var simulation = 
+    	d3.forceSimulation(nodes)
+    	.force('link',d3.forceLink(links))
+    	.force('charge',d3.forceManyBody())
+    	.force('center',d3.forceCenter());
 
+    debugger
 
 
 })
