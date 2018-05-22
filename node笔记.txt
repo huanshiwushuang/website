@@ -1,0 +1,27 @@
+1、require、exports、module
+2、require 多次导入同一个模块只会初始化一次
+3、可以编写 二进制模块，扩展名为 .node 
+4、模块加载规则：
+	4.1 . ./ / ../ 开头的，按照相对和绝对路径加载
+	4.2、若为 单个单词 的内置模块直接加载
+	4.3、foo/bar 的路径，按照 运行 require的文件路径，从下向上查找 node_modules 文件夹下的 foo/bar 模块
+	4.4、配置了 NODE_PATH 环境变量，搜索模块
+	
+5、npm install jquery -g --save-dev  => npm uninstall jquery -g --save-dev
+6、npm login	npm publish		npm unpublish
+
+7、process是一个全局变量，可通过process.argv获得命令行参数。由于argv[0]固定等于NodeJS执行程序的绝对路径，argv[1]固定等于主模块的绝对路径
+
+8、fs.writeFileSync(dst, fs.readFileSync(src));
+9、fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+
+10、var bin = new Buffer([ 0x68, 0x65, 0x6c, 0x6c, 0x6f ]);
+11、针对 Buffer 二进制数组的 slice 方法，返回的数组的修改会修改原 Buffer 数组（slice 更像是一个指针）
+12、因此 slice 并不能复制数组，需要创建新的 Buffer ，使用 copy方法
+	var bin = new Buffer([ 0x68, 0x65, 0x6c, 0x6c, 0x6f ]);
+	var dup = new Buffer(bin.length);
+
+	bin.copy(dup);
+	dup[0] = 0x48;
+	console.log(bin); // => <Buffer 68 65 6c 6c 6f>
+	console.log(dup); // => <Buffer 48 65 65 6c 6f>
