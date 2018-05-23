@@ -1,13 +1,9 @@
-var fs = require('fs'),
-	path = require('path');
+var util = require('util');
 
-function replace(pathname) {
-	var str = fs.readFileSync(pathname, 'binary');
-	console.log(fs.readFileSync(pathname));
-	console.log(str);
-	str = str.replace('gbk', 'hahaha');
-	console.log(str);
-	fs.writeFileSync(pathname, 'binary');
+function log() {
+    process.stdout.write(
+    	util.format.apply(util,arguments)
+    );
 }
 
-replace('./gbk.txt');
+log('asd asd123 fds');

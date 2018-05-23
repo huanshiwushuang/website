@@ -89,6 +89,284 @@
 	}
 	console.log(fs.readFileSync('./gbk.txt').toString('utf-8'));
 	console.log(readGBKText('./gbk.txt'));
-21、
 
+21、binary 单字节读取文件。对于某些字符来说，无论啥编码，其表现的。
+	例如：英文字母
 
+	var fs = require('fs'),
+	path = require('path');
+
+	function replace(pathname) {
+		var str = fs.readFileSync(pathname, 'binary');
+		console.log(fs.readFileSync(pathname));
+		console.log(str);
+		str = str.replace('gbk', 'hahaha');
+		console.log(str);
+		fs.writeFileSync(pathname, str, 'binary');
+	}
+
+	replace('./gbk.txt');
+
+22、经典 http 服务器：（有机会可以  打印 req 和 res看看详细内容）
+	var http = require('http');
+
+	http.createServer(function (req, res) {
+		res.writeHead(200, {
+			'Content-Type': 'text-plain'
+		})
+		res.end('Hello World\n');
+	}).listen(8080);
+
+23、内置http模块的 http 请求构造
+	var http = require('http');
+	var options = {
+		hostname: '127.0.0.1',
+		port: 8080,
+		path: '/',
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		}
+	};
+	var req = http.request(options, function (res) {
+		var data = [];
+		res.on('data', function (chunk) {
+			data.push(chunk);
+		})
+		res.on('end', function () {
+			console.log(Buffer.concat(data).toString());
+		})
+	})
+	req.write('你好，我是客户端');
+	req.end();
+24、http模块便捷的 GET 请求：
+	var http = require('http');
+
+	http.get('http://www.baidu.com/s?wd=jiangxia', function (res) {
+		var data = [];
+		console.log(res.statusCode);
+		console.log(res.headers);
+
+		res.on('data', function (chunk) {
+			data.push(chunk);
+		})
+		res.on('end', function () {
+			console.log(Buffer.concat(data).toString());
+		})
+	})
+25、https 服务器 只是比 http 多了一个 私钥和证书的配置
+	var https = require('https'),
+		fs = require('fs');
+
+	var options = {
+			key: fs.readFileSync('./ssl/default.key'),
+			cert: fs.readFileSync('./ssl/default.cert')
+		};
+	var server = https.createServer(options, function (req, res) {
+		
+	})
+
+26、NodeJS支持SNI技术，可以根据HTTPS客户端请求使用的域名动态使用不同的证书，因此同一个HTTPS服务器可以使用多个域名提供服务。
+上接 25：（配置多个证书）
+	server.addContext('foo.com', {
+	    key: fs.readFileSync('./ssl/foo.com.key'),
+	    cert: fs.readFileSync('./ssl/foo.com.cer')
+	});
+
+	server.addContext('bar.com', {
+	    key: fs.readFileSync('./ssl/bar.com.key'),
+	    cert: fs.readFileSync('./ssl/bar.com.cer')
+	});
+
+27、https 模块 发起请求，与 http 几乎相同
+	var options = {
+	        hostname: 'www.example.com',
+	        port: 443,
+	        path: '/',
+	        method: 'GET'
+	    };
+
+	var request = https.request(options, function (response) {});
+
+	request.end();
+28、如果目标服务器使用的SSL证书是自制的，不是从颁发机构购买的，默认情况下https模块会拒绝连接，提示说有证书安全问题。在options里加入rejectUnauthorized: false字段可以禁用对证书有效性的检查，从而允许https模块请求开发环境下使用自制证书的HTTPS服务器。
+
+29、URL 模块使用率超高。
+	console.log(url.parse('http://user:pass@host.com:8080/p/a/t/h?query=string#hash'));
+30、.parse
+	方法还支持第二个和第三个布尔类型可选参数。
+	第二个参数--->等于true时，该方法返回的URL对象中，query字段不再是一个字符串，而是一个经过querystring模块转换后的参数对象。
+	第三个参数--->等于true时，该方法可以正确解析不带协议头的URL，例如//www.example.com/foo/bar。
+31、url.format 将 对象转换成 url 字符串
+
+32、.resolve方法可以用于拼接URL（注意：如果bar后加上 / 又不一样了）
+	url.resolve('http://www.example.com/foo/bar', '../baz');
+	/* =>
+	http://www.example.com/baz
+	*/
+33、querystring模块（类比 JSON）
+	用于实现URL参数字符串与参数对象的互相转换
+	querystring.parse('foo=bar&baz=qux&baz=quux&corge');
+	/* =>
+	{ foo: 'bar', baz: ['qux', 'quux'], corge: '' }
+	*/
+34、querystring.stringify
+	querystring.stringify({ foo: 'bar', baz: ['qux', 'quux'], corge: '' });
+	/* =>
+	'foo=bar&baz=qux&baz=quux&corge='
+	*/
+35、zlib模块提供了数据压缩和解压的功能。当我们处理HTTP请求和响应时，可能需要用到这个模块
+例子：
+	var http = require('http'),
+	zlib = require('zlib');
+
+	http.createServer(function (req, res) {
+		var i = 1024,
+			data = '';
+		// 构造用于压缩的数据
+		while (i--) {
+			data += '.';
+		}
+		// 如果 请求头 标明支持 gzip
+		if ((req.headers['accept-encoding'] || '').indexOf('gzip') != -1) {
+			zlib.gzip(data, function (err, data) {
+				res.writeHead(200, {
+					'Content-Type': 'text/plain',
+					'Content-Encoding': 'gzip'
+				})
+				res.end(data);
+			})
+		} else {
+			res.writeHead(200, {
+	            'Content-Type': 'text/plain'
+	        });
+	        res.end(data);
+		}
+	}).listen(8080);
+
+36、zlib 解压 gzip数据，方法： zlib.gunzip(data,function(err,data){})
+例子部分代码：
+	response.on('end', function () {
+        body = Buffer.concat(body);
+
+        if (response.headers['content-encoding'] === 'gzip') {
+            zlib.gunzip(body, function (err, data) {
+                console.log(data.toString());
+            });
+        } else {
+            console.log(data.toString());
+        }
+    });
+
+37、net 模块
+	Socket搭建一个很不严谨的HTTP服务器的例子
+
+	var net = require('net');
+	net.createServer(function (conn) {
+		// 接收到连接，监听连接的数据
+		conn.on('data', function (data) {
+			conn.write([
+				'HTTP/1.1 200 OK',
+				'Content-Type: text/plain',
+				'Content-Length: 11',
+				'',
+				'Hello World'
+			].join('\n'));
+
+			console.log(data.toString());
+		})
+	}).listen(8080);
+
+38、net 模块
+	Socket搭建一个很不严谨的HTTP客户端的例子
+
+	var net = require('net'),
+	options = {
+		hostname: '127.0.0.1',
+		port: 8080,
+	};
+	// 解释：因为 socket 长连接的，所以需要在连接上之后，才write数据
+	// 所以，此回调函数，不是接收到数据的回调，而是连接上之后的回调
+	var conn = net.connect(options, function () {
+		conn.write([
+			'GET / HTTP/1.1',
+			'User-Agent: curl/7.26.0',
+			'Hst: www.baidu.com',
+			'Accept: */*',
+			'',
+			''
+		].join('\n'));
+	})
+	conn.on('data', function (data) {
+		console.log(data.toString());
+		conn.end();
+	})
+
+39、小结
+
+本章介绍了使用NodeJS操作网络时需要的API以及一些坑回避技巧，总结起来有以下几点：
+
+http和https模块支持服务端模式和客户端模式两种使用方式。
+
+request和response对象除了用于读写头数据外，都可以当作数据流来操作。
+
+url.parse方法加上request.url属性是处理HTTP请求时的固定搭配。
+
+使用zlib模块可以减少使用HTTP协议时的数据传输量。
+
+通过net模块的Socket服务器与客户端可对HTTP协议做底层操作。
+
+小心踩坑。
+
+40、Node 调用 shell命令 复制
+
+	var child_process = require('child_process');
+	var util = require('util');
+
+	function copy(source, target, callback) {
+	    child_process.exec(
+	        util.format('cp -r %s/* %s', source, target), callback);
+	}
+
+	copy('a', 'b', function (err) {
+	    // ...
+	});
+	从以上代码中可以看到，子进程是异步运行的，通过回调函数返回执行结果。
+41、API 走马观花
+	Process：
+		通过process对象感知和控制NodeJS自身进程的方方面面。另外需要注意的是，process不是内置模块，而是一个全局对象，因此在任何地方都可以直接使用。
+	Child_Process：
+		使用child_process模块可以创建和控制子进程。该模块提供的API中最核心的是.spawn，其余API都是针对特定使用场景对它的进一步封装，算是一种语法糖。
+	cluster：
+		是对child_process模块的进一步封装，专用于解决单进程NodeJS Web服务器无法充分利用多核CPU的问题。使用该模块可以简化多进程服务器程序的开发，让每个核上运行一个工作进程，并统一通过主进程监听端口和分发请求。
+42、程序退出状态码，正常退出为 0
+	try {
+	    // ...
+	} catch (err) {
+	    // ...
+	    process.exit(1);
+	}
+43、process.stdout 输出流 （奇特：util.format.apply(util,arguments)）
+	var util = require('util');
+
+	function log() {
+	    process.stdout.write(
+	    	util.format.apply(util,arguments)
+	    );
+	}
+
+	log('asd asd123 fds');
+
+44、Linux 系统下降权。
+	为了系统的安全性，在监听成功 80 端口后
+
+	http.createServer(callback).listen(80, function () {
+	    var env = process.env,
+	        uid = parseInt(env['SUDO_UID'] || process.getuid(), 10),
+	        gid = parseInt(env['SUDO_GID'] || process.getgid(), 10);
+
+	    process.setgid(gid);
+	    process.setuid(uid);
+	});
+	
+45、
