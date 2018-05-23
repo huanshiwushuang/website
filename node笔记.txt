@@ -369,4 +369,168 @@ url.parse方法加上request.url属性是处理HTTP请求时的固定搭配。
 	    process.setuid(uid);
 	});
 	
-45、
+45、child_process
+	子进程简单运用，可以执行命令
+	var child_process = require('child_process');
+
+	var child = child_process.spawn('node', ['test.js']);
+
+	child.stdout.on('data', function (data) {
+		console.log('stdout:'+data);
+	})
+
+	child.stderr.on('data', function (data) {
+		console.log('stderr:'+data);
+	})
+
+	child.on('close', function (code) {
+		console.log('child process close code is '+code);
+	})
+
+46、进程通信 （此代码未调通）
+	/* parent.js */
+	var child = child_process.spawn('node', [ 'child.js' ]);
+
+	child.kill('SIGTERM');
+
+	/* child.js */
+	process.on('SIGTERM', function () {
+	    cleanUp();
+	    process.exit(0);
+	});
+
+	在上例中，父进程通过.kill方法向子进程发送SIGTERM信号，子进程监听process对象的SIGTERM事件响应信号。不要被.kill方法的名称迷惑了，该方法本质上是用来给进程发送信号的，进程收到信号后具体要做啥，完全取决于信号的种类和进程自身的代码。
+
+47、进程通信 2 如果进程都是 nodejs 的进程
+	就可以通过IPC（进程间通讯）双向传递数据
+	// main.js
+	var child_process = require('child_process');
+
+	var child  = child_process.spawn('node', ['test.js'], {
+		stdio: [0,1,2,'ipc']
+	});
+
+	child.on('message', function (msg) {
+		console.log(`${msg}`);
+	})
+
+	child.send({msg:'hello child'});
+
+	//test.js
+	process.on('message', function (msg) {
+		console.log(`${msg.msg}`);
+		process.send(msg.msg = 'hello father');
+	})
+
+48、守护进程
+	/* daemon.js */
+	function spawn(mainModule) {
+	    var worker = child_process.spawn('node', [ mainModule ]);
+
+	    worker.on('exit', function (code) {
+	        if (code !== 0) {
+	            spawn(mainModule);
+	        }
+	    });
+	}
+
+	spawn('worker.js');
+
+49、异步编程写法：
+	(function next(i, len, callback) {
+	    if (i < len) {
+	        async(arr[i], function (value) {
+	            arr[i] = value;
+	            next(i + 1, len, callback);
+	        });
+	    } else {
+	        callback();
+	    }
+	}(0, arr.length, function () {
+	    // All array items have processed.
+	}));
+	如果数组成员可以并行处理，但后续代码仍然需要所有数组成员处理完毕后才能执行的话，则异步代码会调整成以下形式：	
+	(function (i, len, count, callback) {
+	    for (; i < len; ++i) {
+	        (function (i) {
+	            async(arr[i], function (value) {
+	                arr[i] = value;
+	                if (++count === len) {
+	                    callback();
+	                }
+	            });
+	        }(i));
+	    }
+	}(0, arr.length, 0, function () {
+	    // All array items have processed.
+	}));
+
+50、JS自身提供的异常捕获和处理机制——try..catch..，只能用于同步执行的代码
+	function sync(fn) {
+	    return fn();
+	}
+
+	try {
+	    sync(null);
+	    // Do something.
+	} catch (err) {
+	    console.log('Error: %s', err.message);
+	}
+
+	-- Console ------------------------------
+	Error: object is not a function
+
+51、
+	NodeJS提供了domain模块，可以简化异步代码的异常处理。在介绍该模块之前，我们需要首先理解“域”的概念。简单的讲，一个域就是一个JS运行环境，在一个运行环境中，如果一个异常没有被捕获，将作为一个全局异常被抛出。NodeJS通过process对象提供了捕获全局异常的方法，示例代码如下
+	process.on('uncaughtException', function (err) {
+	    console.log('Error: %s', err.message);
+	});
+
+	setTimeout(function (fn) {
+	    fn();
+	});
+
+	-- Console ------------------------------
+	Error: undefined is not a function
+
+52、domain 模块准备弃用（有坑），如果找到了更好的替代方法，将被彻底弃用。
+	（在这个层层嵌套的 异步回调中，如果报错了，将会domain捕获）
+	示例代码：
+		function async(request, callback) {
+		    // Do something.
+		    asyncA(request, function (data) {
+		        // Do something
+		        asyncB(request, function (data) {
+		            // Do something
+		            asyncC(request, function (data) {
+		                // Do something
+		                callback(data);
+		            });
+		        });
+		    });
+		}
+
+		http.createServer(function (request, response) {
+		    var d = domain.create();
+
+		    d.on('error', function () {
+		        response.writeHead(500);
+		        response.end();
+		    });
+
+		    d.run(function () {
+		        async(request, function (data) {
+		            response.writeHead(200);
+		            response.end(data);
+		        });
+		    });
+		});
+
+	陷阱：
+	无论是通过process对象的uncaughtException事件捕获到全局异常，还是通过子域对象的error事件捕获到了子域异常，在NodeJS官方文档里都强烈建议处理完异常后立即重启程序，而不是让程序继续运行。
+	但：
+	这里需要澄清一些事实。JS本身的throw..try..catch异常处理机制并不会导致内存泄漏，也不会让程序的执行结果出乎意料，但NodeJS并不是存粹的JS。NodeJS里大量的API内部是用C/C++实现的，因此NodeJS程序的运行过程中，代码执行路径穿梭于JS引擎内部和外部，而JS的异常抛出机制可能会打断正常的代码执行流程，导致C/C++部分的代码表现异常，进而导致内存泄漏等问题。
+	而使用try语句捕获异常时一般捕获到的都是JS本身的异常，不用担心上诉问题。
+
+Web 大示例
+53、
