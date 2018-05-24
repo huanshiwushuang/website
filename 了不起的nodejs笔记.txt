@@ -1,3 +1,140 @@
 1、如果你不想发布你的模块，可以在package.json 中加入 "private": "true"，避免误发布
 2、如果你的包是命令行工具，可以在package.json 里加入 bin属性，路径指向可执行脚本或二进制文件。
-3、
+
+3、for (var i in obj) {
+	
+}
+
+4、hasOwnProperty
+
+5、Array.isArray()
+
+6、ArrayObj.forEach(function (item, index, ArrayObj) {
+	
+}, thisArg)
+
+7、ArrayObj.filter(function (item, index, ArrayObj) {
+	
+}, thisArg)
+
+8、ArrayObj.map(function (item, index, ArrayObj) {
+	
+}, thisArg)
+
+9、ArrayObj.reduce(function (total, curr, index, ArrayObj) {
+	
+}, initVal)
+
+10、ArrayObj.find(function (item, index, ArrayObj) {
+	
+}, thisArg)
+
+11、ArrayObj.findIndex(function (item, index, ArrayObj) {
+	
+}, thisArg)
+
+12、arr.includes(searchElement)
+	arr.includes(searchElement, fromIndex)
+
+13、arr.indexOf(searchElement)
+	arr.indexOf(searchElement[, fromIndex = 0])
+
+14、arr.lastIndexOf(searchElement[, fromIndex = arr.length - 1])
+
+15、String.trim();
+
+16、Function.prototype.bind（类比 apply 和 call，bind是返回函数但不调用）
+	
+	function a() {
+		return this.hello == 'world';
+	}
+	var b = a.bind({hello: 'world'});
+	console.log(b());
+
+	bind函数绑定了a，第一个参数是上下文，之后的才是传入绑定的函数的参数。
+	传入的参数的值不受之后的外部改变。
+
+17、函数的名字
+	var  a = function b() {}
+	a.name == 'b'
+	如果给函数命名了，有有利于在报错的时候，正确显示堆栈追踪信息。
+	推荐始终对函数进行命名
+
+18、存取器
+	Date.prototype.__defineGetter__('ago', function () {
+		return '这件事发生在。。。天之前';
+	})
+
+	var a = new Date('5/24/2018');
+	a.ago;
+19、Node 和 PHP 有个很大的不同之处就是，
+	变量如果在函数体内被重置了，
+	发起两次请求，node不会重新定义被重置的变量，
+	而php会维持之前的变量。
+
+20、process.on('uncatchException', function (err) {
+	console.log(err);
+	process.exit(1); //手动退出
+})
+
+21、process.nextTick()
+	将一个函数的执行时机，规划到下一个事件循环中
+
+22、事件分发的监听，分发
+	类比给一个对象绑定了函数，然后调用
+	
+	var EventEmitter = require('events').EventEmitter,
+	a = new EventEmitter;
+
+	a.on('event' , function () {
+		console.log('event called');
+	})
+
+	a.emit('event');
+
+23、EventEmitter 
+	
+	var EventEmitter = process.EventEmitter,
+		MyClass = function (){};
+
+	MyClass.prototype.__proto__ = EventEmitter.prototype;
+	这样，所有的 MyClass 的实例都具备了事件功能。
+
+	var a = new MyClass;
+	a.on('事件', function () {
+		//dosomething
+	})
+
+	EventEmitter 更像是一个全局的函数定义仓库，方便可以在全局触发任意地方定义（监听）的事件。
+
+24、举个例子，当收到http请求的时候，通常数据不会一次性到达（比如提交表单的时候）
+	所以，需要监听 data 和 end 事件
+
+	http.createServer(function (req, res) {
+		req.on('data', function (data) {
+
+		})
+		req.on('end', function () {
+
+		})
+	})
+
+25、只会调用一次回调函数
+	a.once('name', function () {
+
+	})
+
+26、http.createServer 和 http.Server 的不同之处是
+	http.createServer 内部调用了 http.Server ，并返回了实例
+
+27、base64 字符串保存为本地图片
+	
+	var fs = require('fs');
+
+	var b = new Buffer('ttOkHWBKyt34/wD/2Q==', 'base64');
+
+	fs.writeFile('123.png', b, function (err) {
+		if (err) {
+			console.log(err);
+		}
+	});
