@@ -4,6 +4,7 @@ var fs = require(`fs`),
 	stdin = process.stdin,
 	stdout = process.stdout;
 
+stdin.setEncoding('utf8');
 fs.readdir(_dirname, function (err, files) {
 	var statsArr = [];
 	if (err) {
@@ -33,11 +34,9 @@ fs.readdir(_dirname, function (err, files) {
 		})
 	}
 	function read() {
-		console.log(``);
+		console.log('');
 		stdout.write(`Enter your choice: `);
 		stdin.resume();
-		stdin.setEncoding('utf8');
-
 		stdin.on('data', option);
 	}
 	function option(data) {
