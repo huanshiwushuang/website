@@ -1,11 +1,11 @@
 var fs = require(`fs`),
 	path = require(`path`),
-	 _dirname = process.cwd(),
+	 dirname = __dirname,
 	stdin = process.stdin,
 	stdout = process.stdout;
 
 stdin.setEncoding('utf8');
-fs.readdir(_dirname, function (err, files) {
+fs.readdir(dirname, function (err, files) {
 	var statsArr = [];
 	if (err) {
 		return console.log(`${err.message}`);
@@ -15,7 +15,7 @@ fs.readdir(_dirname, function (err, files) {
 	console.log(`Select which file or directory you want to see:`);
 	function file(i) {
 		var filename = files[i];
-		fs.stat(path.join(_dirname,filename), function (err, stats) {
+		fs.stat(path.join(dirname,filename), function (err, stats) {
 			statsArr.push(stats);
 			if (err) {
 				return console.log(err.message);
@@ -45,7 +45,7 @@ fs.readdir(_dirname, function (err, files) {
 		} else {
 			stdin.pause();
 
-			fs.readFile(path.join(_dirname, files[Number(data-1)]), 'utf8', function (err, data) {
+			fs.readFile(path.join(dirname, files[Number(data-1)]), 'utf8', function (err, data) {
 				console.log();
 				console.log(`\x1b[90m ${data.replace(/(.*)/g,'\t$1')} \x1b[0m`);
 			})

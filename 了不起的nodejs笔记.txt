@@ -144,4 +144,7 @@ stdin 标准输入
 stdout 标准输出
 stderr 标准错误
 
-29、
+29、__dirname 			表示执行文件的绝对路径
+	process.cwd()		表示当前命令执行的绝对路径
+	process.chdir('..')	更改当前工作目录
+	process.env			访问环境变量
