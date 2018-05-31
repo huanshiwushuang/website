@@ -1,3 +1,8 @@
-var fs = require('fs');
+var http = require('http');
 
-console.log(process.env);
+var server = http.Server(function (req, res) {
+	console.log(1);
+	res.end('123');
+});
+
+server.listen(3000);

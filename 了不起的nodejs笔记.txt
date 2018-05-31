@@ -148,3 +148,14 @@ stderr 标准错误
 	process.cwd()		表示当前命令执行的绝对路径
 	process.chdir('..')	更改当前工作目录
 	process.env			访问环境变量
+	process.exit(0)		正常退出代码
+
+30、进程信号
+	SIGKILL 进程终止
+	Node程序是通过在process对象上以事件分发的形式来发送信号的：
+	process.on('SIGKILL', function () {
+		//信号已收到
+	})
+31、watchFile 	监视文件
+	watch		监视目录
+	不稳定的API
