@@ -1,0 +1,536 @@
+1、require、exports、module
+2、require 多次导入同一个模块只会初始化一次
+3、可以编写 二进制模块，扩展名为 .node 
+4、模块加载规则：
+	4.1 . ./ / ../ 开头的，按照相对和绝对路径加载
+	4.2、若为 单个单词 的内置模块直接加载
+	4.3、foo/bar 的路径，按照 运行 require的文件路径，从下向上查找 node_modules 文件夹下的 foo/bar 模块
+	4.4、配置了 NODE_PATH 环境变量，搜索模块
+	
+5、npm install jquery -g --save-dev  => npm uninstall jquery -g --save-dev
+6、npm login	npm publish		npm unpublish
+
+7、process是一个全局变量，可通过process.argv获得命令行参数。由于argv[0]固定等于NodeJS执行程序的绝对路径，argv[1]固定等于主模块的绝对路径
+
+8、fs.writeFileSync(dst, fs.readFileSync(src));
+9、fs.createReadStream(src).pipe(fs.createWriteStream(dst));
+
+10、var bin = new Buffer([ 0x68, 0x65, 0x6c, 0x6c, 0x6f ]);
+11、针对 Buffer 二进制数组的 slice 方法，返回的数组的修改会修改原 Buffer 数组（slice 更像是一个指针）
+12、因此 slice 并不能复制数组，需要创建新的 Buffer ，使用 copy方法
+	var bin = new Buffer([ 0x68, 0x65, 0x6c, 0x6c, 0x6f ]);
+	var dup = new Buffer(bin.length);
+
+	bin.copy(dup);
+	dup[0] = 0x48;
+	console.log(bin); // => <Buffer 68 65 6c 6c 6f>
+	console.log(dup); // => <Buffer 48 65 65 6c 6f>
+
+13、文件管道流 pipe() 实现了防爆仓控制。
+	其原理类似
+	var rs = fs.createReadStream(src);
+	var ws = fs.createWriteStream(dst);
+
+	rs.on('data', function (chunk) {
+	    if (ws.write(chunk) === false) {
+	        rs.pause();
+	    }
+	});
+
+	rs.on('end', function () {
+	    ws.end();
+	});
+
+	ws.on('drain', function () {
+	    rs.resume();
+	});
+14、fs 模块  基本上 异步 API 都有与之对应的同步API
+	例如： readFile 和 readFileSync
+
+	异步方法是回调，同步方法是 try catch 捕获错误
+15、path 模块，内置，有方法  normalize 使路径正常化，返回字符串
+	var path = require('path');
+	var cache = {};
+
+	function store(key, value) {
+		cache[path.normalize(key).replace(/\\/g,'/')] = value;
+	}
+	store('foo/bar', 1);
+	store('foo//bar//../bar', 2);
+	console.log(cache);
+16、路径拼接：
+	path.join('foo/', 'baz/', '../bar'); // => "foo/bar"
+17、获取pathname扩展名
+	path.extname('asd.js/pasd.txt')
+
+18、同步遍历目录
+	function travel(dir, callback) {
+		fs.readdirSync(dir).forEach(function (file) {
+			var pathname = path.join(dir, file);
+
+			if (fs.statSync(pathname).isDirectory()) {
+				travel(pathname, callback);
+			} else {
+				callback(pathname);
+			}
+		})
+	}
+19、异步遍历目录是个难点：（目录或读取文件状态时使用的是异）
+	
+20、第三方包应用：iconv-lite：文本文件编码转换
+	var fs = require('fs'),
+	path = require('path'),
+	iconv = require('iconv-lite');
+
+	function readGBKText(pathname) {
+		var b = fs.readFileSync(pathname);
+
+		return iconv.decode(b, 'GBK');
+	}
+	console.log(fs.readFileSync('./gbk.txt').toString('utf-8'));
+	console.log(readGBKText('./gbk.txt'));
+
+21、binary 单字节读取文件。对于某些字符来说，无论啥编码，其表现的。
+	例如：英文字母
+
+	var fs = require('fs'),
+	path = require('path');
+
+	function replace(pathname) {
+		var str = fs.readFileSync(pathname, 'binary');
+		console.log(fs.readFileSync(pathname));
+		console.log(str);
+		str = str.replace('gbk', 'hahaha');
+		console.log(str);
+		fs.writeFileSync(pathname, str, 'binary');
+	}
+
+	replace('./gbk.txt');
+
+22、经典 http 服务器：（有机会可以  打印 req 和 res看看详细内容）
+	var http = require('http');
+
+	http.createServer(function (req, res) {
+		res.writeHead(200, {
+			'Content-Type': 'text-plain'
+		})
+		res.end('Hello World\n');
+	}).listen(8080);
+
+23、内置http模块的 http 请求构造
+	var http = require('http');
+	var options = {
+		hostname: '127.0.0.1',
+		port: 8080,
+		path: '/',
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		}
+	};
+	var req = http.request(options, function (res) {
+		var data = [];
+		res.on('data', function (chunk) {
+			data.push(chunk);
+		})
+		res.on('end', function () {
+			console.log(Buffer.concat(data).toString());
+		})
+	})
+	req.write('你好，我是客户端');
+	req.end();
+24、http模块便捷的 GET 请求：
+	var http = require('http');
+
+	http.get('http://www.baidu.com/s?wd=jiangxia', function (res) {
+		var data = [];
+		console.log(res.statusCode);
+		console.log(res.headers);
+
+		res.on('data', function (chunk) {
+			data.push(chunk);
+		})
+		res.on('end', function () {
+			console.log(Buffer.concat(data).toString());
+		})
+	})
+25、https 服务器 只是比 http 多了一个 私钥和证书的配置
+	var https = require('https'),
+		fs = require('fs');
+
+	var options = {
+			key: fs.readFileSync('./ssl/default.key'),
+			cert: fs.readFileSync('./ssl/default.cert')
+		};
+	var server = https.createServer(options, function (req, res) {
+		
+	})
+
+26、NodeJS支持SNI技术，可以根据HTTPS客户端请求使用的域名动态使用不同的证书，因此同一个HTTPS服务器可以使用多个域名提供服务。
+上接 25：（配置多个证书）
+	server.addContext('foo.com', {
+	    key: fs.readFileSync('./ssl/foo.com.key'),
+	    cert: fs.readFileSync('./ssl/foo.com.cer')
+	});
+
+	server.addContext('bar.com', {
+	    key: fs.readFileSync('./ssl/bar.com.key'),
+	    cert: fs.readFileSync('./ssl/bar.com.cer')
+	});
+
+27、https 模块 发起请求，与 http 几乎相同
+	var options = {
+	        hostname: 'www.example.com',
+	        port: 443,
+	        path: '/',
+	        method: 'GET'
+	    };
+
+	var request = https.request(options, function (response) {});
+
+	request.end();
+28、如果目标服务器使用的SSL证书是自制的，不是从颁发机构购买的，默认情况下https模块会拒绝连接，提示说有证书安全问题。在options里加入rejectUnauthorized: false字段可以禁用对证书有效性的检查，从而允许https模块请求开发环境下使用自制证书的HTTPS服务器。
+
+29、URL 模块使用率超高。
+	console.log(url.parse('http://user:pass@host.com:8080/p/a/t/h?query=string#hash'));
+30、.parse
+	方法还支持第二个和第三个布尔类型可选参数。
+	第二个参数--->等于true时，该方法返回的URL对象中，query字段不再是一个字符串，而是一个经过querystring模块转换后的参数对象。
+	第三个参数--->等于true时，该方法可以正确解析不带协议头的URL，例如//www.example.com/foo/bar。
+31、url.format 将 对象转换成 url 字符串
+
+32、.resolve方法可以用于拼接URL（注意：如果bar后加上 / 又不一样了）
+	url.resolve('http://www.example.com/foo/bar', '../baz');
+	/* =>
+	http://www.example.com/baz
+	*/
+33、querystring模块（类比 JSON）
+	用于实现URL参数字符串与参数对象的互相转换
+	querystring.parse('foo=bar&baz=qux&baz=quux&corge');
+	/* =>
+	{ foo: 'bar', baz: ['qux', 'quux'], corge: '' }
+	*/
+34、querystring.stringify
+	querystring.stringify({ foo: 'bar', baz: ['qux', 'quux'], corge: '' });
+	/* =>
+	'foo=bar&baz=qux&baz=quux&corge='
+	*/
+35、zlib模块提供了数据压缩和解压的功能。当我们处理HTTP请求和响应时，可能需要用到这个模块
+例子：
+	var http = require('http'),
+	zlib = require('zlib');
+
+	http.createServer(function (req, res) {
+		var i = 1024,
+			data = '';
+		// 构造用于压缩的数据
+		while (i--) {
+			data += '.';
+		}
+		// 如果 请求头 标明支持 gzip
+		if ((req.headers['accept-encoding'] || '').indexOf('gzip') != -1) {
+			zlib.gzip(data, function (err, data) {
+				res.writeHead(200, {
+					'Content-Type': 'text/plain',
+					'Content-Encoding': 'gzip'
+				})
+				res.end(data);
+			})
+		} else {
+			res.writeHead(200, {
+	            'Content-Type': 'text/plain'
+	        });
+	        res.end(data);
+		}
+	}).listen(8080);
+
+36、zlib 解压 gzip数据，方法： zlib.gunzip(data,function(err,data){})
+例子部分代码：
+	response.on('end', function () {
+        body = Buffer.concat(body);
+
+        if (response.headers['content-encoding'] === 'gzip') {
+            zlib.gunzip(body, function (err, data) {
+                console.log(data.toString());
+            });
+        } else {
+            console.log(data.toString());
+        }
+    });
+
+37、net 模块
+	Socket搭建一个很不严谨的HTTP服务器的例子
+
+	var net = require('net');
+	net.createServer(function (conn) {
+		// 接收到连接，监听连接的数据
+		conn.on('data', function (data) {
+			conn.write([
+				'HTTP/1.1 200 OK',
+				'Content-Type: text/plain',
+				'Content-Length: 11',
+				'',
+				'Hello World'
+			].join('\n'));
+
+			console.log(data.toString());
+		})
+	}).listen(8080);
+
+38、net 模块
+	Socket搭建一个很不严谨的HTTP客户端的例子
+
+	var net = require('net'),
+	options = {
+		hostname: '127.0.0.1',
+		port: 8080,
+	};
+	// 解释：因为 socket 长连接的，所以需要在连接上之后，才write数据
+	// 所以，此回调函数，不是接收到数据的回调，而是连接上之后的回调
+	var conn = net.connect(options, function () {
+		conn.write([
+			'GET / HTTP/1.1',
+			'User-Agent: curl/7.26.0',
+			'Hst: www.baidu.com',
+			'Accept: */*',
+			'',
+			''
+		].join('\n'));
+	})
+	conn.on('data', function (data) {
+		console.log(data.toString());
+		conn.end();
+	})
+
+39、小结
+
+本章介绍了使用NodeJS操作网络时需要的API以及一些坑回避技巧，总结起来有以下几点：
+
+http和https模块支持服务端模式和客户端模式两种使用方式。
+
+request和response对象除了用于读写头数据外，都可以当作数据流来操作。
+
+url.parse方法加上request.url属性是处理HTTP请求时的固定搭配。
+
+使用zlib模块可以减少使用HTTP协议时的数据传输量。
+
+通过net模块的Socket服务器与客户端可对HTTP协议做底层操作。
+
+小心踩坑。
+
+40、Node 调用 shell命令 复制
+
+	var child_process = require('child_process');
+	var util = require('util');
+
+	function copy(source, target, callback) {
+	    child_process.exec(
+	        util.format('cp -r %s/* %s', source, target), callback);
+	}
+
+	copy('a', 'b', function (err) {
+	    // ...
+	});
+	从以上代码中可以看到，子进程是异步运行的，通过回调函数返回执行结果。
+41、API 走马观花
+	Process：
+		通过process对象感知和控制NodeJS自身进程的方方面面。另外需要注意的是，process不是内置模块，而是一个全局对象，因此在任何地方都可以直接使用。
+	Child_Process：
+		使用child_process模块可以创建和控制子进程。该模块提供的API中最核心的是.spawn，其余API都是针对特定使用场景对它的进一步封装，算是一种语法糖。
+	cluster：
+		是对child_process模块的进一步封装，专用于解决单进程NodeJS Web服务器无法充分利用多核CPU的问题。使用该模块可以简化多进程服务器程序的开发，让每个核上运行一个工作进程，并统一通过主进程监听端口和分发请求。
+42、程序退出状态码，正常退出为 0
+	try {
+	    // ...
+	} catch (err) {
+	    // ...
+	    process.exit(1);
+	}
+43、process.stdout 输出流 （奇特：util.format.apply(util,arguments)）
+	var util = require('util');
+
+	function log() {
+	    process.stdout.write(
+	    	util.format.apply(util,arguments)
+	    );
+	}
+
+	log('asd asd123 fds');
+
+44、Linux 系统下降权。
+	为了系统的安全性，在监听成功 80 端口后
+
+	http.createServer(callback).listen(80, function () {
+	    var env = process.env,
+	        uid = parseInt(env['SUDO_UID'] || process.getuid(), 10),
+	        gid = parseInt(env['SUDO_GID'] || process.getgid(), 10);
+
+	    process.setgid(gid);
+	    process.setuid(uid);
+	});
+	
+45、child_process
+	子进程简单运用，可以执行命令
+	var child_process = require('child_process');
+
+	var child = child_process.spawn('node', ['test.js']);
+
+	child.stdout.on('data', function (data) {
+		console.log('stdout:'+data);
+	})
+
+	child.stderr.on('data', function (data) {
+		console.log('stderr:'+data);
+	})
+
+	child.on('close', function (code) {
+		console.log('child process close code is '+code);
+	})
+
+46、进程通信 （此代码未调通）
+	/* parent.js */
+	var child = child_process.spawn('node', [ 'child.js' ]);
+
+	child.kill('SIGTERM');
+
+	/* child.js */
+	process.on('SIGTERM', function () {
+	    cleanUp();
+	    process.exit(0);
+	});
+
+	在上例中，父进程通过.kill方法向子进程发送SIGTERM信号，子进程监听process对象的SIGTERM事件响应信号。不要被.kill方法的名称迷惑了，该方法本质上是用来给进程发送信号的，进程收到信号后具体要做啥，完全取决于信号的种类和进程自身的代码。
+
+47、进程通信 2 如果进程都是 nodejs 的进程
+	就可以通过IPC（进程间通讯）双向传递数据
+	// main.js
+	var child_process = require('child_process');
+
+	var child  = child_process.spawn('node', ['test.js'], {
+		stdio: [0,1,2,'ipc']
+	});
+
+	child.on('message', function (msg) {
+		console.log(`${msg}`);
+	})
+
+	child.send({msg:'hello child'});
+
+	//test.js
+	process.on('message', function (msg) {
+		console.log(`${msg.msg}`);
+		process.send(msg.msg = 'hello father');
+	})
+
+48、守护进程
+	/* daemon.js */
+	function spawn(mainModule) {
+	    var worker = child_process.spawn('node', [ mainModule ]);
+
+	    worker.on('exit', function (code) {
+	        if (code !== 0) {
+	            spawn(mainModule);
+	        }
+	    });
+	}
+
+	spawn('worker.js');
+
+49、异步编程写法：
+	(function next(i, len, callback) {
+	    if (i < len) {
+	        async(arr[i], function (value) {
+	            arr[i] = value;
+	            next(i + 1, len, callback);
+	        });
+	    } else {
+	        callback();
+	    }
+	}(0, arr.length, function () {
+	    // All array items have processed.
+	}));
+	如果数组成员可以并行处理，但后续代码仍然需要所有数组成员处理完毕后才能执行的话，则异步代码会调整成以下形式：	
+	(function (i, len, count, callback) {
+	    for (; i < len; ++i) {
+	        (function (i) {
+	            async(arr[i], function (value) {
+	                arr[i] = value;
+	                if (++count === len) {
+	                    callback();
+	                }
+	            });
+	        }(i));
+	    }
+	}(0, arr.length, 0, function () {
+	    // All array items have processed.
+	}));
+
+50、JS自身提供的异常捕获和处理机制——try..catch..，只能用于同步执行的代码
+	function sync(fn) {
+	    return fn();
+	}
+
+	try {
+	    sync(null);
+	    // Do something.
+	} catch (err) {
+	    console.log('Error: %s', err.message);
+	}
+
+	-- Console ------------------------------
+	Error: object is not a function
+
+51、
+	NodeJS提供了domain模块，可以简化异步代码的异常处理。在介绍该模块之前，我们需要首先理解“域”的概念。简单的讲，一个域就是一个JS运行环境，在一个运行环境中，如果一个异常没有被捕获，将作为一个全局异常被抛出。NodeJS通过process对象提供了捕获全局异常的方法，示例代码如下
+	process.on('uncaughtException', function (err) {
+	    console.log('Error: %s', err.message);
+	});
+
+	setTimeout(function (fn) {
+	    fn();
+	});
+
+	-- Console ------------------------------
+	Error: undefined is not a function
+
+52、domain 模块准备弃用（有坑），如果找到了更好的替代方法，将被彻底弃用。
+	（在这个层层嵌套的 异步回调中，如果报错了，将会domain捕获）
+	示例代码：
+		function async(request, callback) {
+		    // Do something.
+		    asyncA(request, function (data) {
+		        // Do something
+		        asyncB(request, function (data) {
+		            // Do something
+		            asyncC(request, function (data) {
+		                // Do something
+		                callback(data);
+		            });
+		        });
+		    });
+		}
+
+		http.createServer(function (request, response) {
+		    var d = domain.create();
+
+		    d.on('error', function () {
+		        response.writeHead(500);
+		        response.end();
+		    });
+
+		    d.run(function () {
+		        async(request, function (data) {
+		            response.writeHead(200);
+		            response.end(data);
+		        });
+		    });
+		});
+
+	陷阱：
+	无论是通过process对象的uncaughtException事件捕获到全局异常，还是通过子域对象的error事件捕获到了子域异常，在NodeJS官方文档里都强烈建议处理完异常后立即重启程序，而不是让程序继续运行。
+	但：
+	这里需要澄清一些事实。JS本身的throw..try..catch异常处理机制并不会导致内存泄漏，也不会让程序的执行结果出乎意料，但NodeJS并不是存粹的JS。NodeJS里大量的API内部是用C/C++实现的，因此NodeJS程序的运行过程中，代码执行路径穿梭于JS引擎内部和外部，而JS的异常抛出机制可能会打断正常的代码执行流程，导致C/C++部分的代码表现异常，进而导致内存泄漏等问题。
+	而使用try语句捕获异常时一般捕获到的都是JS本身的异常，不用担心上诉问题。
+
+Web 大示例
+53、
