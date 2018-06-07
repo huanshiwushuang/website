@@ -8,11 +8,38 @@
 <body>
 	<form id="form" @submit.prevent="submit($event)">
 		<button type="submit">提交</button>
+		<span>{{ hello }}</span>
+		<span>{{ reverseHello }}</span>
+		<span>{{ jia }}</span>
 	</form>
 	
 	<script type="text/javascript">
 		var vm = new Vue({
 			el: '#form',
+			data: {
+				hello: 'Hello!',
+				a: 1,
+				b: 2,
+				c: 5
+			},
+			computed: {
+				reverseHello: function () {
+					return this.hello.split('').reverse().join('');
+				},
+				jia: function () {
+					return this.a+this.b;
+				},
+				jian: {
+					get: function () {
+						return this.c-this.jia;
+					},
+					set: function (newVal) {
+						var tmp = newVal.split(' ');
+						this.a = Number(tmp[0]);
+						this.b = Number(tmp[1]);
+					}
+				}
+			},
 			methods: {
 				submit: function (e) {
 					console.log(arguments);

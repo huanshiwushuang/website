@@ -32,7 +32,33 @@ v-html
 
 		},
 		methods: {
+			相比于计算属性 computed 没有缓存
 
+			funcName: function () {
+
+			}
+		},
+		computed: {
+			html中 {{ }} 只适用于简单的计算
+			这个可以用于复杂的计算
+			计算属性和 methods 的差别还在于
+				computed 可以缓存的，只要这里的func依赖的响应式依赖数据没有被改变，就不会重新调用函数。
+			vm.funcName 可以直接访问计算好的值 getter 函数
+
+
+			funcName: function () {
+
+			}
+		},
+		watch: {
+			dataName: function () {
+
+			}
+
+			监听属性，估计其他写法是 
+			vm.$watch('dataName', function (newVal, oldVal) {
+
+			})
 		},
 		created: function () {
 			在一个实例被创建之后执行代码
@@ -59,5 +85,36 @@ v-html
 8、v-on:submit.prevent="onSubmit"
 	还有其他的 修饰符
 
-9、
-	
+9、computed  的 优势
+	var vm = new Vue({
+	  el: '#demo',
+	  data: {
+	    firstName: 'Foo',
+	    lastName: 'Bar'
+	  },
+	  computed: {
+	    fullName: function () {
+	      return this.firstName + ' ' + this.lastName
+	    }
+	  }
+	})
+
+10、computed 默认只有getter，没有setter 可以手动提供 setter
+
+	computed: {
+	  fullName: {
+	    // getter
+	    get: function () {
+	      return this.firstName + ' ' + this.lastName
+	    },
+	    // setter
+	    set: function (newValue) {
+	      var names = newValue.split(' ')
+	      this.firstName = names[0]
+	      this.lastName = names[names.length - 1]
+	    }
+	  }
+	}
+
+
+11、侦听属性：
