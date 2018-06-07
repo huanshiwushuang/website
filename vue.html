@@ -6,41 +6,18 @@
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 <body>
-	<ul id="dom">
-		<todo-item 
-			v-for="item in innerObj"
-			v-bind:innerobj="item"
-			v-bind:key="item.id">
-		</todo-item>
-		<button v-on:click="change">按钮</button>
-	</ul>
+	<form id="form" @submit.prevent="submit($event)">
+		<button type="submit">提交</button>
+	</form>
+	
 	<script type="text/javascript">
-		Vue.component('todo-item', {
-			template: '<li>{{ innerobj.text }}</li>',
-			props: ['innerobj']
-		})
-		var dataObj = {
-				innerObj: [
-					{text:'第1个',id:'0'},
-					{text:'第2个',id:'1'},
-					{text:'第3个',id:'2'},
-					{text:'第4个',id:'3'},
-					{text:'第5个',id:'4'}
-				]
-			}
-		var app = new Vue({
-			el: '#dom',
-			data: dataObj,
+		var vm = new Vue({
+			el: '#form',
 			methods: {
-				change: function () {
-					this.innerObj[0].text = 123;
+				submit: function (e) {
+					console.log(arguments);
 				}
 			}
-		})
-
-		app.$watch('innerObj', function (newValue, oldValue) {
-			console.log(newValue);
-			console.log(oldValue);
 		})
 	</script>
 

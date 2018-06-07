@@ -1,11 +1,63 @@
 {{message}}
-v-bind
-v-if
-v-for
-v-model
+v-bind	绑定dom属性，可以是自有 也可以是组件的属性
+		可以用 : 冒号简写
+
+v-if	控制元素是否显示	数据值为布尔值
+v-for	循环所在的dom元素	遍历的数据为数组
+v-model	表单输入和数据绑定
+
 v-on
+	可以使用 @ 不完全的代替
+	事件监听器	绑定插件的js事件
 Vue.component()
-组件中的 props 禁止 大写 推荐 禁止短横线
-注意 如果 VUE 不生效时，注意当时的选择器范围
-v-once
+	组件中的 props 禁止 大写 推荐 禁止短横线
+	注意 如果 VUE 不生效时，注意当时的选择器范围
+
+v-once	数据只会插入一次，不会更新，会影响到所有的数据更新。
+	<span v-once>{{ msg }}</span>
 v-html
+	直接解析为 html
+	会忽略解析属性值中的数据绑定。注意，你不能使用 v-html 来复合局部模板，因为 Vue 不是基于字符串的模板引擎
+
+
+1、Object.freeze(dataObj);
+	虽然可以冻结对象，但是必须在被添加到VUE对象里之前。
+
+2、vue实例的自有属性，以 $ 开头，和自定义属性区分开来。
+
+3、生命周期钩子：
+	new Vue({
+		el: '#id',
+		data: {
+
+		},
+		methods: {
+
+		},
+		created: function () {
+			在一个实例被创建之后执行代码
+		}
+	})
+4、不要在vue配置选项属性或回调上使用箭头函数
+
+5、关于 disabled 这种属性
+	在html中，只要有就会有效果，但是在VUE中，
+	如果 value 是 undefined null false 等就不会有该属性
+
+6、对于所有的数据绑定，Vue.js都提供了完全的JavaScript表达式支持
+	{{ number + 1 }}
+
+	{{ ok ? 'YES' : 'NO' }}
+
+	{{ message.split('').reverse().join('') }}
+
+	<div v-bind:id="'list-' + id"></div>
+	但是只支持 单表达式
+
+7、模板表达式都被放在沙盒中，只能访问全局变量的一个白名单，如 Math 和 Date 。你不应该在模板表达式中试图访问用户定义的全局变量。
+
+8、v-on:submit.prevent="onSubmit"
+	还有其他的 修饰符
+
+9、
+	
