@@ -159,3 +159,7 @@ stderr 标准错误
 31、watchFile 	监视文件
 	watch		监视目录
 	不稳定的API
+32、net 模块的 tcp 服务端的搭建，乱码和tcp客户端是个大问题。
+	比如 putty 连接的时候，会发送莫名的数据。
+	比如 zeta-telnet 的数据格式会消失等等。
+33、
