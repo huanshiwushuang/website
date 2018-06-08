@@ -8,6 +8,7 @@ v-model	表单输入和数据绑定
 
 v-on
 	可以使用 @ 不完全的代替
+		在用对象同时绑定多个事件时，不能用@代替v-on
 	事件监听器	绑定插件的js事件
 Vue.component()
 	组件中的 props 禁止 大写 推荐 禁止短横线
@@ -118,3 +119,8 @@ v-html
 
 
 11、侦听属性：
+	用 计算属性 computer 替代 watch
+
+Class 与 Style 绑定
+
+12、
