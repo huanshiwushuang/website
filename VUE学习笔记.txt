@@ -2,7 +2,8 @@
 v-bind	绑定dom属性，可以是自有 也可以是组件的属性
 		可以用 : 冒号简写
 
-v-if	控制元素是否显示	数据值为布尔值
+v-if	控制元素是否显示/输出	数据值为布尔值
+
 v-for	循环所在的dom元素	遍历的数据为数组
 v-model	表单输入和数据绑定
 
@@ -13,6 +14,10 @@ v-on
 Vue.component()
 	组件中的 props 禁止 大写 推荐 禁止短横线
 	注意 如果 VUE 不生效时，注意当时的选择器范围
+
+	Vue.component('my-component', {
+		template: '<p class="foo bar">Hi</p>'
+	})
 
 v-once	数据只会插入一次，不会更新，会影响到所有的数据更新。
 	<span v-once>{{ msg }}</span>
@@ -119,8 +124,475 @@ v-html
 
 
 11、侦听属性：
-	用 计算属性 computer 替代 watch
+	用 计算属性 computed 替代 watch
+
+
 
 Class 与 Style 绑定
 
-12、
+12、v-bind:class="{active:isActive}"
+	active 类是否存在，取决于后面的数据属性isActive的布尔值
+
+	不同class和bind的class可以共存
+	<span class="a" v-bind:class="{b:c}">
+
+13、这种 class 和 data属性绑定也可以
+	用data属性绑定
+		<div v-bind:class="classObject"></div>
+
+		data: {
+		  classObject: {
+		    active: true,
+		    'text-danger': false
+		  }
+		}
+
+	用计算属性绑定
+		<div v-bind:class="classObject"></div>
+
+		data: {
+		  isActive: true,
+		  error: null
+		},
+		computed: {
+		  classObject: function () {
+		    return {
+		      active: this.isActive && !this.error,
+		      'text-danger': this.error && this.error.type === 'fatal'
+		    }
+		  }
+		}
+
+14、class绑定支持数组
+	v-bind:class="[a,b,c]"
+	data: {
+		a:aaa,
+		b:bbb,
+		c:ccc
+	}
+15、如果你也想根据条件切换列表中的class，可以用三元表达式：
+	<div v-bind:class="[isActive ? activeClass : '', errorClass]"></div>
+
+16、数组中支持对象语法
+	<div v-bind:class="[{ active: isActive },errorClass]"></div>
+
+17、定义的Vue.component 也适用于这种绑定class的语法
+
+18、v-bind:style  用js对象的形式写style
+
+	<div v-bind:style="{ color: activeColor, fontSize: fontSize + 'px' }"></div>
+
+	或者这种：
+
+	<div v-bind:style="styleObject"></div>
+	data: {
+	  styleObject: {
+	    color: 'red',
+	    fontSize: '13px'
+	  }
+	}
+
+19、v-bind:style的数组语法可以将多个样式对象应用到同一个元素上：
+
+	<div v-bind:style="[baseStyles,overridingStyles]"></div>
+
+20、当 v-bind:style 使用需要添加浏览器引擎前缀的 CSS 属性时，如 transform，Vue.js 会自动侦测并添加相应的前缀。
+
+21、从 2.3.0 起你可以为 style 绑定中的属性提供一个包含多个值的数组，常用于提供多个带前缀的值，例如：
+
+	<div :style="{ display: ['-webkit-box','-ms-flexbox', 'flex'] }"></div>
+
+	这样写只会渲染数组中最后一个被浏览器支持的值。在本例中，如果浏览器支持不带浏览器前缀的 flexbox，那么就只会渲染 display: flex。
+
+22、v-else
+	搭配 v-if
+
+23、因为 v-if 是一个指令，所以必须将它添加到一个元素上。但是如果想切换多个元素呢？此时可以把一个 <template> 元素当做不可见的包裹元素，并在上面使用 v-if。最终的渲染结果将不包含 <template> 元素。
+
+24、v-else 元素必须紧跟在带 v-if 或者 v-else-if 的元素的后面，否则它将不会被识别。
+
+25、v-else-if，顾名思义，充当 v-if 的“else-if 块”，可以连续使用：
+	类似于 v-else，v-else-if 也必须紧跟在带 v-if 或者 v-else-if 的元素之后。
+
+26、用 key 管理可复用的元素
+	同样的dom元素被切换，会被复用，通过设置key="value" value的不同可以不被复用
+	
+	<template v-if="loginType === 'username'">
+	  <label>Username</label>
+	  <input placeholder="Enter your username">
+	</template>
+	<template v-else>
+	  <label>Email</label>
+	  <input placeholder="Enter your email address">
+	</template>
+
+	那么在上面的代码中切换 loginType 将不会清除用户已经输入的内容。因为两个模板使用了相同的元素，<input> 不会被替换掉——仅仅是替换了它的 placeholder。
+
+	这样也不总是符合实际需求，所以 Vue 为你提供了一种方式来表达“这两个元素是完全独立的，不要复用它们”。只需添加一个具有唯一值的 key 属性即可：
+
+	<template v-if="loginType === 'username'">
+	  <label>Username</label>
+	  <input placeholder="Enter your username" key="username-input">
+	</template>
+	<template v-else>
+	  <label>Email</label>
+	  <input placeholder="Enter your email address" key="email-input">
+	</template>
+
+27、v-show
+	v-show 只是简单地切换元素的 CSS 属性 display。
+
+	v-show 不支持 <template> 元素，也不支持 v-else。
+
+	一般来说，v-if 有更高的切换开销，而 v-show 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 v-show 较好；如果在运行时条件很少改变，则使用 v-if 较好。
+
+28、当 v-if 与 v-for 一起使用时，v-for 具有比 v-if 更高的优先级。
+
+29、v-for还支持一个可选的第二个参数为当前项的索引。
+	<ul id="example-2">
+	  <li v-for="(item, index) in items">
+	    {{ parentMessage }} - {{ index }} - {{ item.message }}
+	  </li>
+	</ul>
+	var example2 = new Vue({
+	  el: '#example-2',
+	  data: {
+	    parentMessage: 'Parent',
+	    items: [
+	      { message: 'Foo' },
+	      { message: 'Bar' }
+	    ]
+	  }
+	})
+30、你也可以用 of 替代 in 作为分隔符，因为它是最接近 JavaScript 迭代器的语法
+
+31、v-for 也可以迭代 对象
+
+32、你也可以提供第二个的参数为键名：
+<div v-for="(value, key) in object">
+  {{ key }}: {{ value }}
+</div>
+
+33、第三个参数为索引：
+<div v-for="(value, key, index) in object">
+  {{ index }}. {{ key }}: {{ value }}
+</div>
+
+34、特别注意：
+	在遍历对象时，是按 Object.keys() 的结果遍历，但是不能保证它的结果在不同的 JavaScript 引擎下是一致的。
+
+35、建议尽可能在使用 v-for 时提供 key，除非遍历输出的 DOM 内容非常简单，或者是刻意依赖默认行为以获取性能上的提升。
+
+36、
+	Vue 包含一组观察数组的变异方法，所以它们也将会触发视图更新。这些方法如下：
+	push()
+	pop()
+	shift()
+	unshift()
+	splice()
+	sort()
+	reverse()
+
+37、非变异 (non-mutating method) 方法
+	filter(), concat() 和 slice()
+	
+	这些不会改变原始数组，但总是返回一个新数组。
+
+38、
+	由于 JavaScript 的限制，Vue 不能检测以下变动的数组：
+	当你利用索引直接设置一个项时，例如：vm.items[indexOfItem] = newValue
+	当你修改数组的长度时，例如：vm.items.length = newLength
+
+	解决办法：
+		使用 VUE 提供的方法
+			Vue.set(arrObj, index, newVal);
+	你也可以使用 vm.$set 实例方法，该方法是全局方法 Vue.set 的一个别名
+
+39、对于已经创建的实例，Vue不能动态添加根级别的响应式属性。
+	Vue.set(object, key, value) 方法向嵌套对象添加响应式属性
+
+40、如果你想要为 data 属性中的对象添加多个新的属性
+	为了保持响应式：
+		1、不应该
+			Object.assign(vm.userProfile, {
+			  age: 27,
+			  favoriteColor: 'Vue Green'
+			})
+		2、应该 重新赋值
+			vm.userProfile = Object.assign({}, vm.userProfile, {
+			  age: 27,
+			  favoriteColor: 'Vue Green'
+			})
+
+41、
+	显示过滤/排序结果
+
+	有时，我们想要显示一个数组的过滤或排序副本，而不实际改变或重置原始数据。在这种情况下，可以创建返回过滤或排序数组的计算属性。
+	例如：
+	<li v-for="n in evenNumbers">{{ n }}</li>
+	data: {
+	  numbers: [ 1, 2, 3, 4, 5 ]
+	},
+	computed: {
+	  evenNumbers: function () {
+	    return this.numbers.filter(function (number) {
+	      return number % 2 === 0
+	    })
+	  }
+	}
+	在计算属性不适用的情况下 (例如，在嵌套 v-for 循环中) 你可以使用一个 method 方法：
+	<li v-for="n in even(numbers)">{{ n }}</li>
+	data: {
+	  numbers: [ 1, 2, 3, 4, 5 ]
+	},
+	methods: {
+	  even: function (numbers) {
+	    return numbers.filter(function (number) {
+	      return number % 2 === 0
+	    })
+	  }
+	}
+
+42、
+	v-for 也可以取整数。在这种情况下，它将重复多次模板。
+	<div>
+	  <span v-for="n in 10">{{ n }} </span>
+	</div>
+
+	1 2 3 4 5 6 7 8 9 10
+
+43、2.2.0+ 的版本里，当在组件中使用 v-for 时，key 现在是必须的。
+
+44、$emit('remove')
+	触发父组件的事件
+
+45、@click 调用methods 的方法时，可以在最后的传参 $event 
+	传入原生的事件对象
+
+46、事件修饰符
+	.stop	.prevent	.capture
+	.self	.once		.passive
+
+	<!-- 阻止单击事件继续传播 -->
+	<a v-on:click.stop="doThis"></a>
+
+	<!-- 提交事件不再重载页面 -->
+	<form v-on:submit.prevent="onSubmit"></form>
+
+	<!-- 修饰符可以串联 -->
+	<a v-on:click.stop.prevent="doThat"></a>
+
+	<!-- 只有修饰符 -->
+	<form v-on:submit.prevent></form>
+
+	<!-- 添加事件监听器时使用事件捕获模式 -->
+	<!-- 即元素自身触发的事件先在此处处理，然后才交由内部元素进行处理 -->
+	<div v-on:click.capture="doThis">...</div>
+
+	<!-- 只当在 event.target 是当前元素自身时触发处理函数 -->
+	<!-- 即事件不是从内部元素触发的 -->
+	<div v-on:click.self="doThat">...</div>
+
+	使用修饰符时，顺序很重要；相应的代码会以同样的顺序产生。因此，用 v-on:click.prevent.self 会阻止所有的点击，而 v-on:click.self.prevent 只会阻止对元素自身的点击。
+
+41、这个 .passive修饰符尤其能够提升移动端的性能。
+	有了这个修饰符，就不会阻止元素的默认行为，即使使用了 preventDefault()
+
+42、按键修饰符
+	<!-- 只有在 `keyCode` 是 13 时调用 `vm.submit()` -->
+	<input v-on:keyup.13="submit">
+
+	记住所有的 keyCode 比较困难，所以 Vue 为最常用的按键提供了别名：
+	<!-- 同上 -->
+	<input v-on:keyup.enter="submit">
+	<!-- 缩写语法 -->
+	<input @keyup.enter="submit">
+
+	全部的按键别名：
+	.enter
+	.tab
+	.delete (捕获“删除”和“退格”键)
+	.esc
+	.space
+	.up
+	.down
+	.left
+	.right
+
+	可以通过全局 config.keyCodes 对象自定义按键修饰符别名：
+	// 可以使用 `v-on:keyup.f1`
+	Vue.config.keyCodes.f1 = 112
+43、
+	2.5.0 新增
+	你也可直接将 KeyboardEvent.key 暴露的任意有效按键名转换为 kebab-case 来作为修饰符：
+	<input @keyup.page-down="onPageDown">
+	在上面的例子中，处理函数仅在 $event.key === 'PageDown' 时被调用。
+
+	有一些按键 (.esc 以及所有的方向键) 在 IE9 中有不同的 key 值, 如果你想支持 IE9，它们的内置别名应该是首选。
+
+44、可以用如下修饰符来实现仅在按下相应按键时才触发鼠标或键盘事件的监听器。
+	.ctrl
+	.alt
+	.shift
+	.meta
+例如：
+	<!-- Alt + C -->
+	<input @keyup.alt.67="clear">
+
+	<!-- Ctrl + Click -->
+	<div @click.ctrl="doSomething">Do something</div>
+请注意：
+	修饰键与常规按键不同，在和 keyup 事件一起用时，事件触发时修饰键必须处于按下状态。换句话说，只有在按住 ctrl 的情况下释放其它按键，才能触发 keyup.ctrl。而单单释放 ctrl 也不会触发事件。如果你想要这样的行为，请为 ctrl 换用 keyCode：keyup.17。
+
+45、.exact 修饰符
+		2.5.0 新增
+			.exact 修饰符允许你控制由精确的系统修饰符组合触发的事件。
+	<!-- 即使 Alt 或 Shift 被一同按下时也会触发 -->
+	<button @click.ctrl="onClick">A</button>
+
+	<!-- 有且只有 Ctrl 被按下的时候才触发 -->
+	<button @click.ctrl.exact="onCtrlClick">A</button>
+
+	<!-- 没有任何系统修饰符被按下的时候才触发 -->
+	<button @click.exact="onClick">A</button>
+
+46、鼠标按钮修饰符
+
+	2.2.0 新增
+	.left
+	.right
+	.middle
+	这些修饰符会限制处理函数仅响应特定的鼠标按钮。
+
+47、为什么在 HTML 中监听事件?
+
+	你可能注意到这种事件监听的方式违背了关注点分离 (separation of concern) 这个长期以来的优良传统。但不必担心，因为所有的 Vue.js 事件处理方法和表达式都严格绑定在当前视图的 ViewModel 上，它不会导致任何维护上的困难。实际上，使用 v-on 有几个好处：
+	扫一眼 HTML 模板便能轻松定位在 JavaScript 代码里对应的方法。
+	因为你无须在 JavaScript 里手动绑定事件，你的 ViewModel 代码可以是非常纯粹的逻辑，和 DOM 完全解耦，更易于测试。
+	当一个 ViewModel 被销毁时，所有的事件处理器都会自动被删除。你无须担心如何自己清理它们。
+
+48、select v-model
+
+	如果 v-model表达式的初始值未能匹配任何选项，<select> 元素将被渲染为“未选中”状态。在 iOS 中，这会使用户无法选择第一个选项。因为这样的情况下，iOS 不会触发 change 事件。因此，更推荐像上面这样提供一个值为空的禁用选项。
+
+49、多选时 (绑定到一个数组)
+
+	<div id="example-6">
+	  <select v-model="selected" multiple style="width: 50px;">
+	    <option>A</option>
+	    <option>B</option>
+	    <option>C</option>
+	  </select>
+	  <br>
+	  <span>Selected: {{ selected }}</span>
+	</div>
+
+	new Vue({
+	  el: '#example-6',
+	  data: {
+	    selected: []
+	  }
+	})
+
+50、复选框
+
+	<input
+	  type="checkbox"
+	  v-model="toggle"
+	  true-value="yes"
+	  false-value="no"
+	>
+
+	// 当选中时
+	vm.toggle === 'yes'
+	// 当没有选中时
+	vm.toggle === 'no'
+
+	这里的 true-value 和 false-value 特性并不会影响输入控件的 value 特性，因为浏览器在提交表单时并不会包含未被选中的复选框。如果要确保表单中这两个值中的一个能够被提交，(比如“yes”或“no”)，请换用单选按钮。
+
+51、.lazy
+
+	在默认情况下，v-model 在每次 input 事件触发后将输入框的值与数据进行同步 (除了上述输入法组合文字时)。你可以添加 lazy 修饰符，从而转变为使用 change 事件进行同步：
+	<!-- 在“change”时而非“input”时更新 -->
+	<input v-model.lazy="msg" >
+
+	.number
+
+	如果想自动将用户的输入值转为数值类型，可以给 v-model 添加 number 修饰符：
+	<input v-model.number="age" type="number">
+	这通常很有用，因为即使在 type="number" 时，HTML 输入元素的值也总会返回字符串。
+
+	.trim
+
+	如果要自动过滤用户输入的首尾空白字符，可以给 v-model 添加 trim 修饰符：
+	<input v-model.trim="msg">
+
+组件基础
+
+52、因为组件是可复用的 Vue 实例，所以它们与 new Vue 接收相同的选项，例如 data、computed、watch、methods 以及生命周期钩子等。仅有的例外是像 el 这样根实例特有的选项。
+
+53、Vue.components 
+	中的 data 属性必须是一个函数
+
+54、子组件可以通过
+	$emit('方法名')
+	触发父组件 绑定的 同名方法
+
+55、使用事件抛出一个值
+	子组件向父组件传递数据
+
+	有的时候用一个事件来抛出一个特定的值是非常有用的。例如我们可能想让 <blog-post> 组件决定它的文本要放大多少。这时可以使用 $emit 的第二个参数来提供这个值：
+	<button v-on:click="$emit('enlarge-text', 0.1)">
+	  Enlarge text
+	</button>
+
+	然后当在父级组件监听这个事件的时候，我们可以通过 $event 访问到被抛出的这个值：
+	<blog-post
+	  ...
+	  v-on:enlarge-text="postFontSize += $event"
+	></blog-post>
+
+	或者，如果这个事件处理函数是一个方法：
+	<blog-post
+	  ...
+	  v-on:enlarge-text="onEnlargeText"
+	></blog-post>
+
+	那么这个值将会作为第一个参数传入这个方法：
+	methods: {
+	  onEnlargeText: function (enlargeAmount) {
+	    this.postFontSize += enlargeAmount
+	  }
+	}
+
+56、在组件上使用 v-model
+	
+	当用在组件上时，v-model 则会这样：
+	<custom-input
+	  v-bind:value="searchText"
+	  v-on:input="searchText = $event"
+	></custom-input>
+
+	为了让它正常工作，这个组件内的 <input> 必须：
+	将其 value 特性绑定到一个名叫 value 的 prop 上
+
+	在其 input 事件被触发时，将新的值通过自定义的 input 事件抛出
+	写成代码之后是这样的：
+
+	Vue.component('custom-input', {
+	  props: ['value'],
+	  template: `
+	    <input
+	      v-bind:value="value"
+	      v-on:input="$emit('input', $event.target.value)"
+	    >
+	  `
+	})
+
+57、https://cn.vuejs.org/v2/guide/components.html#通过插槽分发内容
+	通过插槽分发内容、动态组件
+
+
+
+
+
