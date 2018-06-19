@@ -731,12 +731,39 @@ Prop
 67、跟组件和 prop 不同，事件名不存在任何自动化的大小写转换。
 	因此，我们推荐你始终使用 kebab-case 的事件名。
 
-68、
+68、复选框-绑定动态 组件值
+	
+	<input
+	  type="checkbox"
+	  v-model="toggle"
+	  true-value="yes"
+	  false-value="no"
+	>
+	// 当选中时
+	vm.toggle === 'yes'
+	// 当没有选中时
+	vm.toggle === 'no'
 
 
+69、单选框 绑定动态 组件值
 
+	<input type="radio" v-model="pick" v-bind:value="a">
+	// 当选中时
+	vm.pick === vm.a
 
+70、选择框-绑定动态 组件直
+	
+	<select v-model="selected">
+    <!-- 内联对象字面量 -->
+	  <option v-bind:value="{ number: 123 }">123</option>
+	</select>
 
+	// 当选中时
+	typeof vm.selected // => 'object'
+	vm.selected.number // => 123
+
+自定义事件
+https://cn.vuejs.org/v2/guide/components-custom-events.html
 
 
 
