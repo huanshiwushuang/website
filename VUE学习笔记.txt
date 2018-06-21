@@ -765,15 +765,112 @@ Prop
 自定义事件
 https://cn.vuejs.org/v2/guide/components-custom-events.html
 
+71、自定义事件  推荐短横线分割
+	会自动转化为全小写
+
+72、自定义组件的 v-model
+	v-model 默认是和
+	value和input相关联的
+
+	这里自定义使得
+	和 checked 与 change 相关联
+
+	Vue.component('base-checkbox', {
+	  model: {
+	    prop: 'checked',
+	    event: 'change'
+	  },
+	  props: {
+	    checked: Boolean
+	  },
+	  template: `
+	    <input
+	      type="checkbox"
+	      v-bind:checked="checked"
+	      v-on:change="$emit('change', $event.target.checked)"
+	    >
+	  `
+	})
+
+	注意:
+		你仍然需要在组件的 props 选项里声明 checked 这个 prop。
+
+73、v-on 的 .native 修饰符：将原生事件绑定到组件
+	绑定原生时间到自定义组件，不能保证根组件
+	就是你想绑定的元素类型
+	所以需要 vm.$listeners
+
+		它是一个对象，里面包含了作用在这个组件上的所有监听器。例如：
+		{
+		  focus: function (event) { /* ... */ }
+		  input: function (value) { /* ... */ },
+		}
 
 
+	Vue.component('base-input', {
+	  inheritAttrs: false,
+	  props: ['label', 'value'],
+	  computed: {
+	    inputListeners: function () {
+	      var vm = this
+	      // `Object.assign` 将所有的对象合并为一个新对象
+	      return Object.assign({},
+	        // 我们从父级添加所有的监听器
+	        this.$listeners,
+	        // 然后我们添加自定义监听器，
+	        // 或覆写一些监听器的行为
+	        {
+	          // 这里确保组件配合 `v-model` 的工作
+	          input: function (event) {
+	            vm.$emit('input', event.target.value)
+	          }
+	        }
+	      )
+	    }
+	  },
+	  template: `
+	    <label>
+	      {{ label }}
+	      <input
+	        v-bind="$attrs"
+	        v-bind:value="value"
+	        v-on="inputListeners"
+	      >
+	    </label>
+	  `
+	})
+
+74、.sync 修饰符	(难点)
+	于是从 vue 2.3.0 开始，我们重新引入了 .sync 修饰符，但是这次它只是作为一个编译时的语法糖存在。他会被自动扩展为一个  自动更新父组件属性的 v-on 监听器。
+
+	被修饰的变量会被添加v-on:update 的监听器，
+	这样就可以在子组件中，手动调用
+		$emit("update:varName",newVal)
+	来更新父组件的值
+
+75、
+	父组件模板的所有东西都会在父级作用域内编译；子组件模板的所有东西都会在子级作用域内编译。
+
+76、难点：
+		作用域插槽
+		详情，参见csdn解说
+
+77、解构 slot-scope
+	参见ES6新语法 结构赋值
 
 
+动态组件 & 异步组件
 
+78、<keep-alive>
+	保持组件切换时候的状态
+	
+异步组件
+很难看懂，主要是对webpack不熟悉
+https://cn.vuejs.org/v2/guide/components-dynamic-async.html#处理加载状态
 
-
-
-
+处理边界情况
+https://cn.vuejs.org/v2/guide/components-edge-cases.html
+暂时停止，转看 vue-route
 
 
 

@@ -6,45 +6,41 @@
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 <body>
-	<form id="form" @submit.prevent="submit($event)">
-		<button type="submit">提交</button>
-		<span>{{ hello }}</span>
-		<span>{{ reverseHello }}</span>
-		<span>{{ jia }}</span>
-	</form>
+	<todo-list v-bind:todos="todos" id="parent">
+	  <template slot-scope="myScope" v-if="myScope.todo.isComplete">
+	  	<span>
+	  		<span>✓</span>
+		    <span>×</span>
+		    {{myScope.todo.text}}
+	  	</span>
+	  </template>
+	</todo-list>
 	
 	<script type="text/javascript">
-		var vm = new Vue({
-			el: '#form',
+		Vue.component('todo-list', {
+			props: ['todos'],
+			template: `<ul>
+						  <li
+						    v-for="todo in todos"
+						    v-bind:key="todo.id"
+						  >
+						    <slot :todo="todo">
+						    	test
+						    </slot>
+						  </li>
+						</ul>`
+		})
+		var parent = new Vue({
+			el: '#parent',
 			data: {
-				hello: 'Hello!',
-				a: 1,
-				b: 2,
-				c: 5
-			},
-			computed: {
-				reverseHello: function () {
-					return this.hello.split('').reverse().join('');
-				},
-				jia: function () {
-					return this.a+this.b;
-				},
-				jian: {
-					get: function () {
-						return this.c-this.jia;
-					},
-					set: function (newVal) {
-						var tmp = newVal.split(' ');
-						this.a = Number(tmp[0]);
-						this.b = Number(tmp[1]);
-					}
-				}
-			},
-			methods: {
-				submit: function (e) {
-					console.log(arguments);
-				}
+				todos: [
+					{id:0,text:'我是第0个',isComplete:true},
+					{id:1,text:'我是第1个',isComplete:false},
+					{id:2,text:'我是第2个',isComplete:true},
+					{id:3,text:'我是第3个',isComplete:true}
+				]
 			}
+
 		})
 	</script>
 
